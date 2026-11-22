@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#171a1d"><meta name="description" content="机核工坊 0.11 中文 3D 装机模拟器。挑选硬件、组装主机、诊断故障，支持手机触控。">
+<title>机核工坊 · PC FORGE</title>
+<link rel="icon" href="assets/mark.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="mast">
+ <a class="brand" href="#menu" id="home"><img src="assets/mark.svg" alt=""><b>PC<span>FORGE</span></b></a>
+ <div class="edition"><span class="online"></span><span>WEB EDITION</span><b>v0.11</b></div>
+</header>
+<main id="menu" class="menu">
+ <section class="intro">
+  <div class="eyebrow"><i></i> 3D 装机模拟器</div>
+  <h1>机核工坊<span>.</span></h1>
+  <p>从第一颗螺丝，到第一次点亮。</p>
+  <fieldset class="modes"><legend>选择工作模式</legend>
+   <button type="button" class="mode active" data-mode="0" aria-pressed="true"><span data-icon="cpu"></span><b>自由装机</b><span class="mark"></span></button>
+   <button type="button" class="mode" data-mode="1" aria-pressed="false"><span data-icon="wrench"></span><b>维修委托</b><span class="mark"></span></button>
+   <button type="button" class="mode" data-mode="2" aria-pressed="false"><span data-icon="book"></span><b>维修学堂</b><span class="mark"></span></button>
+   <button type="button" class="mode" data-mode="3" aria-pressed="false"><span data-icon="case"></span><b>上门装机</b><span class="mark"></span></button>
+  </fieldset>
+  <p id="modeDesc">用入门库存组装第一台主机，也可以选购配件自由搭配。</p>
+  <button class="launch" id="start"><span data-icon="power"></span><span>进入工坊</span></button>
+  <div class="loadInfo" id="loadInfo" role="status" hidden><progress id="progress" max="1"></progress><span id="loadText"></span></div>
+ </section>
+ <figure class="display">
+  <div class="displayHead"><b><span></span> 配置展台</b><small>BUILD PREVIEW</small></div>
+  <div class="displayGrid"><div class="orbit-ring"></div><img class="rig" src="assets/vision.webp" alt="由游戏内模型渲染的白色联力 O11 Vision Compact 主机，侧面敞开，可见水冷和显卡。"><i class="cross tl"></i><i class="cross tr"></i><i class="cross bl"></i><i class="cross br"></i></div>
+  <figcaption><div><small>LIAN LI / 联力</small><h2>O11 VISION <em>COMPACT</em></h2></div><span class="swatch" aria-label="白色机箱"></span></figcaption>
+ </figure>
+ <section class="stats" aria-label="游戏内容"><div><strong>543</strong><span>硬件条目</span></div><div><strong>12</strong><span>预设配置</span></div><div><strong>60</strong><span>维修案例</span></div></section>
+</main>
+<main id="workshop" hidden>
+ <div class="workTop"><div class="workTitle"><span class="eyebrow"><i></i> WORKBENCH</span><h1 id="modeName">自由装机</h1></div><div class="topActions"><div class="wallet"><small>工坊币</small><b id="balance">—</b></div><div id="fileTools" class="row"></div><button id="backMenu" class="flat" title="工作模式">模式</button></div></div>
+ <nav id="mobileTabs" aria-label="工作台区域"><button data-page="view" aria-pressed="true">装配台</button><button data-page="shelf" aria-pressed="false">配件架</button><button data-page="work" aria-pressed="false">工作单</button></nav>
+ <div class="benchLayout" data-page="view">
+  <section class="panel shelf" id="shelf"><div class="panelTitle"><span data-icon="cpu"></span><h2 id="shelfName">配件商店</h2></div><div id="partFilter"></div><input id="search" type="search" autocomplete="off" placeholder="搜索型号、品牌或插槽" aria-label="搜索配件"><div id="marketTabs" class="row"></div><div id="pack"></div><div class="muted caption" id="matches"></div><div class="partList" id="parts"></div></section>
+  <section class="panel stage"><div class="panelTitle"><span data-icon="cube"></span><h2 id="viewTitle">装配台</h2><span class="count" id="count"></span></div><div class="viewFrame" id="viewFrame"><canvas id="canvas" tabindex="-1" aria-label="主机三维视图"></canvas><div id="gesture" tabindex="0" role="application" aria-label="3D 视图，拖动旋转，双指缩放和平移，方向键旋转，加减键缩放"></div><button id="reset" class="viewReset" title="复位视角" aria-label="复位视角"><span data-icon="reset"></span></button></div><div class="hint"><span data-icon="move"></span><span id="hint"></span></div><div id="cameraTools" class="row wrap"></div><p id="selection"></p><div id="offers"></div><div class="row wrap" id="actions"></div></section>
+  <section class="panel job"><div class="panelTitle"><span data-icon="list"></span><h2>工作单</h2></div><div id="work" class="workControls"></div></section>
+ </div>
+ <footer class="statusline" role="status"><span></span><p id="status"></p></footer>
+</main>
+<footer id="menuFooter"><span>PC FORGE <i>/</i> 机核工坊</span><button id="help"><span data-icon="help"></span> 操作指南</button></footer>
+<dialog id="modal"><div class="dialogHead"><h2 id="dialogTitle"></h2><button id="closeDialog" aria-label="关闭">×</button></div><div id="dialogBody"></div><div id="dialogFoot" class="row"></div></dialog>
+<script src="app.js" defer></script>
+</body></html>
