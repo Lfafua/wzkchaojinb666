@@ -38,12 +38,12 @@
  <nav id="mobileTabs" aria-label="工作台区域"><button data-page="view" aria-pressed="true">装配台</button><button data-page="shelf" aria-pressed="false">配件架</button><button data-page="work" aria-pressed="false">工作单</button></nav>
  <div class="benchLayout" data-page="view">
   <section class="panel shelf" id="shelf"><div class="panelTitle"><span data-icon="cpu"></span><h2 id="shelfName">配件商店</h2></div><div id="partFilter"></div><input id="search" type="search" autocomplete="off" placeholder="搜索型号、品牌或插槽" aria-label="搜索配件"><div id="marketTabs" class="row"></div><div id="pack"></div><div class="muted caption" id="matches"></div><div class="partList" id="parts"></div></section>
-  <section class="panel stage"><div class="panelTitle"><span data-icon="cube"></span><h2 id="viewTitle">装配台</h2><span class="count" id="count"></span></div><div class="viewFrame" id="viewFrame"><canvas id="canvas" tabindex="-1" aria-label="主机三维视图"></canvas><div id="gesture" tabindex="0" role="application" aria-label="3D 视图，拖动旋转，双指缩放和平移，方向键旋转，加减键缩放"></div><button id="reset" class="viewReset" title="复位视角" aria-label="复位视角"><span data-icon="reset"></span></button></div><div class="hint"><span data-icon="move"></span><span id="hint"></span></div><div id="cameraTools" class="row wrap"></div><p id="selection"></p><div id="offers"></div><div class="row wrap" id="actions"></div></section>
+  <section class="panel stage"><div class="panelTitle"><span data-icon="cube"></span><h2 id="viewTitle">装配台</h2><span class="count" id="count"></span></div><div class="viewFrame" id="viewFrame"><canvas id="canvas" tabindex="-1" aria-label="主机三维视图"></canvas><div id="gesture" tabindex="0" role="application" aria-label="3D 视图，拖动旋转，双指缩放和平移，方向键旋转，加减键缩放"></div><button id="reset" class="viewReset" title="复位视角" aria-label="复位视角"><span data-icon="reset"></span></button></div><div class="hint"><span data-icon="move"></span><span id="hint"></span></div><div id="cameraTools" class="row wrap"></div><section id="installedPanel" hidden><p class="caption">兼容模式 · 通过配件列表操作</p><h3>已安装配件</h3><div id="installedParts"></div></section><p id="selection"></p><div id="offers"></div><div class="row wrap" id="actions"></div></section>
   <section class="panel job"><div class="panelTitle"><span data-icon="list"></span><h2>工作单</h2></div><div id="work" class="workControls"></div></section>
  </div>
  <footer class="statusline" role="status"><span></span><p id="status"></p></footer>
 </main>
 <footer id="menuFooter"><span>PC FORGE <i>/</i> 机核工坊</span><button id="help"><span data-icon="help"></span> 操作指南</button></footer>
 <dialog id="modal"><div class="dialogHead"><h2 id="dialogTitle"></h2><button id="closeDialog" aria-label="关闭">×</button></div><div id="dialogBody"></div><div id="dialogFoot" class="row"></div></dialog>
-<script src="app.js" defer></script>
+<script src="app.js?v=2" defer></script>
 </body></html>

@@ -9,6 +9,7 @@ var next_update := 0.0
 var last_state := ""
 var parts_cache: Array = []
 var dirty_parts := true
+var list_view := false
 
 func _ready():
  get_window().content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
@@ -24,6 +25,7 @@ func _ready():
   bridge = JavaScriptBridge.get_interface("window")
   on_action = JavaScriptBridge.create_callback(receive)
   bridge.forgeCommand = on_action
+  list_view = DisplayServer.get_name() == "headless"
   if bridge.forgeMobile:
    Engine.max_fps = 30
    for lamp in game.stage.get_children():
@@ -55,6 +57,8 @@ func receive(args):
   "reset": game.stage.reset_camera()
   "part":
    if game.part_buttons.has(str(arg)) and game.part_buttons[str(arg)].visible: game.select_part(str(arg))
+  "installed":
+   if list_view and str(arg) in game.rig.installed.values(): game.select_part(str(arg))
   "search":
    game.find_parts.text = str(arg)
    game.find_parts.text_changed.emit(str(arg))
@@ -174,9 +178,15 @@ func make_state() -> Dictionary:
   if n is Button and n.text in ["保存","读档"]: files.append(control_data(n))
  var current_mode = [game.build_button,game.repair_button,game.school_button,game.order_button].map(func(n):return n.disabled or n.button_pressed)
  var inspect_actions = visible_buttons([game.inspect_button,game.preview_power,game.panel_button,game.cable_side_button,game.compare_size,game.lift_cover])
+ var installed_parts = []
+ if list_view:
+  for id in game.rig.installed.values():
+   var part_button = game.part_buttons.get(id)
+   if part_button:
+    installed_parts.append([id, part_button.text.get_slice("\n", 0)])
  return {"balance":game.balance_label.text,"count":game.count_label.text,"status":game.status_label.text,
   "title":game.view_title.text,"selection":game.selection_label.text,"selected":game.selected,
-  "focused":game.focused,"installed":game.rig.installed,"mode":current_mode,"job":str(game.rig.job),
+  "focused":game.focused,"installed":game.rig.installed,"installedParts":installed_parts,"mode":current_mode,"job":str(game.rig.job),
   "shelfTitle":game.shelf_title.text,"filter":control_data(game.part_kind),"market":game.market_filter,
   "tabs":visible_buttons(game.market_tabs.get_children()),"pack":control_data(game.build_pack) if game.build_pack.visible else {},
   "matches":game.match_count.text,"parts":parts_cache,"offers":offers,"camera":inspect_actions,

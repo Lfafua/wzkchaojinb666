@@ -2,6 +2,7 @@
 const $=id=>document.getElementById(id), names=['自由装机','维修委托','维修学堂','上门装机'];
 const tips=['用入门库存组装第一台主机，也可以选购配件自由搭配。','接取工单，排查故障并通过联合压测。','观察症状、提交诊断，在装配台验证判断。','按客户预算选购硬件，完成装配并交付订单。'];
 let choice=0,mode=0,state,loading=false,help=false;
+let listView=false;
 window.forgeMobile=matchMedia('(pointer:coarse)').matches||innerWidth<761;
 const cmd=(op,a='',b=0)=>window.forgeCommand?.(op,a,b);
 const button=(text,fn)=>{const b=document.createElement('button');b.className='control';b.textContent=text;b.onclick=fn;return b};
@@ -26,12 +27,21 @@ function dialog(d){if(help)return;render('dialogBody',d,n=>{const m=$('modal');i
 function close(){if(help){help=false;$('modal').close();keys.delete('dialogBody');if(state)dialog(state.dialog)}else if(state?.dialog.id)cmd('dismiss',state.dialog.id)}
 $('modal').oncancel=e=>{e.preventDefault();close()};$('closeDialog').onclick=close;
 $('help').onclick=()=>{help=true;text('dialogTitle','操作指南');text('dialogBody','在配件架装入入门库存整套，在工作单连接三组供电，再开机自检。轻点选取、单指拖动旋转、双指缩放或平移。点保存可在同一浏览器读档。');$('dialogFoot').replaceChildren();$('modal').showModal()};
-window.forgeReceive=raw=>{const first=!state;state=JSON.parse(raw);const s=state;
+window.forgeReceive=raw=>{const first=!state;const s=JSON.parse(raw);
 for(const [id,k] of Object.entries({balance:'balance',count:'count',shelfName:'shelfTitle',status:'status',viewTitle:'title',selection:'selection',matches:'matches'}))text(id,s[k]);
 controls('fileTools',s.file);controls('cameraTools',s.camera);controls('actions',s.actions);controls('work',s.work.filter(v=>v.text!=='工作单'));controls('partFilter',[s.filter]);controls('pack',s.pack.id?[s.pack]:[]);
 render('marketTabs',[s.tabs,s.market],n=>s.tabs.forEach((d,i)=>{const b=widget(d);b.setAttribute('aria-pressed',['','new','used','owned'][i]===s.market);n.append(b)}));
 render('parts',[s.parts,s.selected],n=>{let at=0;function add(){for(const [id,t] of s.parts.slice(at,at+50)){const [name,...sub]=t.split('\n');const b=button(name,()=>{cmd('part',id);if(window.forgeMobile)page('view')});b.className='part'+(s.selected===id?' selected':'');const small=document.createElement('small');small.textContent=sub.join(' ');b.append(small);n.append(b)}at+=50;if(at<s.parts.length){const b=button('显示更多',()=>{b.remove();add()});n.append(b)}}add()});
 render('offers',s.offers,n=>s.offers.forEach(o=>{const c=document.createElement('div');c.className='offer';c.append(widget({text:o.name+' '+o.caption}));o.controls.forEach(d=>c.append(widget(d)));n.append(c)}));dialog(s.dialog);
+if(listView)render('installedParts',[s.installedParts,s.focused],n=>{
+ if(!s.installedParts.length)n.append(widget({text:'尚未安装配件。'}));
+ for(const [id,name] of s.installedParts){
+  const b=button(name,()=>cmd('installed',id));
+  b.className='part'+(s.installed[s.focused]===id?' selected':'');
+  n.append(b);
+ }
+});
+state=s;
 if(first){loading=false;$('start').disabled=false;$('loadInfo').hidden=true;queueMicrotask(enter)}};
 $('search').oninput=e=>cmd('search',e.target.value);$('reset').onclick=()=>cmd('reset');text('hint',window.forgeMobile?'轻点选取 · 单指旋转 · 双指缩放或平移':'点击选取 · 拖动旋转 · 中键平移 · 滚轮缩放');
 const area=$('gesture'),pts=new Map();let moved=false,pan=false,origin;
@@ -41,6 +51,44 @@ area.onpointermove=e=>{if(!pts.has(e.pointerId))return;const old=[...pts.values(
 area.onpointerup=e=>{if(!moved&&pts.has(e.pointerId)&&e.button===0){const r=area.getBoundingClientRect();cmd('pick',(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height)}pts.delete(e.pointerId)};area.onpointercancel=area.onlostpointercapture=e=>pts.delete(e.pointerId);
 area.addEventListener('wheel',e=>{e.preventDefault();cmd('zoom',Math.exp(Math.max(-180,Math.min(180,e.deltaY))*.0013))},{passive:false});area.onkeydown=e=>{const xy={ArrowRight:[10,0],ArrowLeft:[-10,0],ArrowUp:[0,-10],ArrowDown:[0,10]}[e.key];if(xy){e.preventDefault();cmd('orbit',...xy)}if(['+','=','-'].includes(e.key))cmd('zoom',e.key==='-'?1.12:.88)};
 window.loadForgeWasm=async path=>{const r=await fetch(path+'.bin');if(!r.ok)throw Error('引擎下载失败');return new Response(r.body.pipeThrough(new DecompressionStream('gzip')),{headers:{'Content-Type':'application/wasm'}})};
-$('start').onclick=async()=>{if(state){enter();return}if(loading)return;loading=true;$('start').disabled=true;$('loadInfo').hidden=false;text('loadText','正在加载约 11 MB 的游戏资源…');
-try{await new Promise((ok,no)=>{const s=document.createElement('script');s.src='engine.js';s.onload=ok;s.onerror=no;document.head.append(s)});if(!Engine.isWebGLAvailable(2)||!window.DecompressionStream)throw Error('需要支持 WebGL 2 的新版浏览器，请开启硬件加速。');const engine=new Engine({executable:'engine',mainPack:'game.pck',canvas:$('canvas'),canvasResizePolicy:0,locale:'zh_CN',focusCanvas:false,persistentPaths:['/userfs'],args:['--rendering-method','gl_compatibility','res://Web.tscn']});await engine.startGame()}
-catch(e){loading=false;text('loadText',e.message||'加载失败');$('start').disabled=false;$('start').lastElementChild.textContent='重新加载';$('start').onclick=()=>location.reload()}};
+$('start').onclick=async()=>{
+ if(state){enter();return}
+ if(loading)return;
+ loading=true;
+ $('start').disabled=true;
+ $('loadInfo').hidden=false;
+ text('loadText','正在加载约 11 MB 的游戏资源…');
+ try{
+  if(!window.WebAssembly||!window.DecompressionStream)throw Error('浏览器版本过旧，请更新浏览器后重试。');
+  await new Promise((resolve,reject)=>{
+   const script=document.createElement('script');
+   script.src='engine.js';
+   script.onload=resolve;
+   script.onerror=()=>reject(Error('引擎脚本下载失败，请检查网络后重试。'));
+   document.head.append(script);
+  });
+  listView=new URLSearchParams(location.search).has('compat')||!Engine.isWebGLAvailable(2);
+  $('viewFrame').hidden=listView;
+  $('hint').parentElement.hidden=listView;
+  $('cameraTools').hidden=listView;
+  $('installedPanel').hidden=!listView;
+  const args=['--main-pack','game.pck'];
+  if(listView)args.push('--headless');
+  const engine=new Engine({executable:'engine',canvas:$('canvas'),canvasResizePolicy:0,locale:'zh_CN',focusCanvas:false,persistentPaths:['/userfs'],args});
+  await Promise.all([engine.init('engine'),engine.preloadFile('game.pck?v=2','game.pck')]);
+  await engine.start();
+ }catch(error){
+  console.error(error);
+  loading=false;
+  const useCompat=!listView&&error instanceof WebAssembly.RuntimeError;
+  text('loadText',useCompat?'3D 引擎启动失败，可以使用兼容模式继续。':error.message||'加载失败，请重新加载。');
+  $('start').disabled=false;
+  $('start').lastElementChild.textContent=useCompat?'进入兼容模式':'重新加载';
+  $('start').onclick=()=>{
+   if(!useCompat){location.reload();return}
+   const url=new URL(location.href);
+   url.searchParams.set('compat','1');
+   location.assign(url);
+  };
+ }
+};

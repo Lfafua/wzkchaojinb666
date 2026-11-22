@@ -35,6 +35,36 @@ for _ in range(count):
     files[name] = data
     cursor += 36
 
+# Release templates reject scene paths passed as command-line overrides.
+# Store the adapter scene as the main scene in the web pack instead.
+settings = files["project.binary"]
+if settings[:4] != b"ECFG":
+    raise ValueError("Invalid Godot project settings header")
+entry_count, = unpack_from("<I", settings, 4)
+cursor = 8
+web_settings = bytearray(settings[:cursor])
+scene_found = False
+for _ in range(entry_count):
+    name_size, = unpack_from("<I", settings, cursor)
+    name_end = cursor + 4 + name_size
+    name = settings[cursor + 4:name_end]
+    value_size, = unpack_from("<I", settings, name_end)
+    value_end = name_end + 4 + value_size
+    value = settings[name_end + 4:value_end]
+    if name == b"application/run/main_scene":
+        variant_type, = unpack_from("<I", value)
+        if variant_type != 4:
+            raise ValueError("Godot main scene setting must be a String")
+        scene_path = b"res://Web.tscn"
+        value = pack("<II", variant_type, len(scene_path)) + scene_path
+        value += b"\0" * (-len(scene_path) % 4)
+        scene_found = True
+    web_settings += settings[cursor:name_end] + pack("<I", len(value)) + value
+    cursor = value_end
+if not scene_found or cursor != len(settings):
+    raise ValueError("Could not set the main scene in the web project settings")
+files["project.binary"] = web_settings
+
 for resource in (ROOT / "port").iterdir():
     if resource.suffix in {".tscn", ".gd"}:
         files[resource.name] = resource.read_bytes()
