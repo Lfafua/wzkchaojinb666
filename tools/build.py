@@ -1,11 +1,14 @@
 """Repackage the user-provided Windows release with the browser controls.
-Usage: python tools/build.py PATH/PCForge-0.11-Windows-x64.zip PATH/web_nothreads_release.zip
+Usage: python tools/build.py PATH/PCForge-0.11-Windows-x64.zip [PATH/web_nothreads_release.zip]
+Omit the template to rebuild just the game, retaining the checked-in engine.
 Use the official Godot 4.7.2 single-thread release template.
 """
 from pathlib import Path
 from hashlib import md5
 from zipfile import ZipFile
 from struct import unpack_from, pack
+import json
+import re
 import gzip
 import sys
 
@@ -65,6 +68,37 @@ if not scene_found or cursor != len(settings):
     raise ValueError("Could not set the main scene in the web project settings")
 files["project.binary"] = web_settings
 
+# Merge the web expansion into the original catalog so saves, the shop and
+# compatibility checks all resolve the same stable hardware identifiers.
+catalog_dir = ROOT / "port" / "data"
+parts = json.loads((catalog_dir / "used_parts.json").read_bytes())
+offers = json.loads((catalog_dir / "used_offers.json").read_bytes())
+if parts.keys() != offers.keys() or len(parts) < 200:
+    raise ValueError("Each added model must have its own used offer")
+for item_id, part in parts.items():
+    if part.get("catalog_only") or offers[item_id].get("used", {}).get("cents", 0) <= 0:
+        raise ValueError(f"Unpurchasable or display-only expansion part: {item_id}")
+
+for target, extra in [("data/parts.json", parts), ("data/market_cn.json", offers)]:
+    original = json.loads(files[target])
+    overlap = original.keys() & extra.keys()
+    if overlap:
+        raise ValueError(f"Existing catalog IDs in {target}: {sorted(overlap)}")
+    original.update(extra)
+    files[target] = json.dumps(original, ensure_ascii=False, separators=(",", ":")).encode()
+
+index_html = OUT / "index.html"
+catalog_count = len(json.loads(files["data/parts.json"]))
+page, matches = re.subn(r'(<strong id="catalogCount">)\d+(</strong>)',
+                        lambda m: f"{m[1]}{catalog_count}{m[2]}",
+                        index_html.read_text())
+if matches != 1:
+    raise ValueError("Missing catalog count in the web menu")
+index_html.write_text(page)
+
+license_file = catalog_dir / "pc-part-dataset-LICENSE.txt"
+files["data/" + license_file.name] = license_file.read_bytes()
+
 for resource in (ROOT / "port").iterdir():
     if resource.suffix in {".tscn", ".gd"}:
         files[resource.name] = resource.read_bytes()
@@ -79,6 +113,9 @@ for path, data in sorted(files.items()):
 header = bytearray(game[:base])
 header[32:40] = pack("<Q", base+len(body))
 (OUT / "game.pck").write_bytes(header+body+directory)
+if len(sys.argv) == 2:
+    sys.exit(0)
+
 with ZipFile(sys.argv[2]) as z:
     js = z.read("godot.js").decode()
     needle = 'preloader.loadPromise(`${loadPath}.wasm`, size, true)'

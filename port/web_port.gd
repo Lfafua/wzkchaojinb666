@@ -13,6 +13,10 @@ var list_view := false
 
 func _ready():
  get_window().content_scale_mode = Window.CONTENT_SCALE_MODE_DISABLED
+ # Install the detailed subclass before the workbench preloads its stage.
+ var stage_script: Script = preload("res://detail_stage.gd")
+ if not stage_script.resource_path == "res://stage.gd":
+  stage_script.take_over_path("res://stage.gd")
  game = load("res://Workbench.tscn").instantiate()
  add_child(game)
  viewer = game.stage.get_viewport().get_parent()
