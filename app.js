@@ -30,8 +30,44 @@ $('help').onclick=()=>{help=true;text('dialogTitle','操作指南');text('dialog
 window.forgeReceive=raw=>{const first=!state;const s=JSON.parse(raw);
 for(const [id,k] of Object.entries({balance:'balance',count:'count',shelfName:'shelfTitle',status:'status',viewTitle:'title',selection:'selection',matches:'matches'}))text(id,s[k]);
 controls('fileTools',s.file);controls('cameraTools',s.camera);controls('actions',s.actions);controls('work',s.work.filter(v=>v.text!=='工作单'));controls('partFilter',[s.filter]);controls('pack',s.pack.id?[s.pack]:[]);
-render('marketTabs',[s.tabs,s.market],n=>s.tabs.forEach((d,i)=>{const b=widget(d);b.setAttribute('aria-pressed',['','new','used','owned'][i]===s.market);n.append(b)}));
-render('parts',[s.parts,s.selected],n=>{let at=0;function add(){for(const [id,t] of s.parts.slice(at,at+50)){const [name,...sub]=t.split('\n');const b=button(name,()=>{cmd('part',id);if(window.forgeMobile)page('view')});b.className='part'+(s.selected===id?' selected':'');const small=document.createElement('small');small.textContent=sub.join(' ');b.append(small);n.append(b)}at+=50;if(at<s.parts.length){const b=button('显示更多',()=>{b.remove();add()});n.append(b)}}add()});
+render('marketTabs',[s.tabs,s.market],n=>s.tabs.forEach((d,i)=>{const b=widget(d);
+ if(i===2)b.onclick=()=>{
+  const filter=state.filter;
+  if(filter.value>filter.choices.indexOf('固态硬盘')){
+   const all=filter.choices.indexOf('全部型号');
+   if(all>=0)cmd(filter.op,filter.id,all);
+  }
+  cmd('button',d.id);
+ };
+ b.setAttribute('aria-pressed',['','new','used','owned'][i]===s.market);
+ n.append(b)}));
+render('parts',s.parts,n=>{
+ let at=0;
+ function addPage(){
+  const fragment=document.createDocumentFragment();
+  for(const [id,label] of s.parts.slice(at,at+50)){
+   const [name,...lines]=label.split('\n');
+   const b=button(name,()=>{cmd('part',id);if(window.forgeMobile)page('view')});
+   b.className='part';
+   b.dataset.part=id;
+   b.classList.toggle('selected',id===state?.selected);
+   const small=document.createElement('small');
+   small.textContent=lines.join(' ');
+   b.append(small);
+   fragment.append(b);
+  }
+  at+=50;
+  if(at<s.parts.length){
+   const more=button('显示更多',()=>{more.remove();addPage()});
+   fragment.append(more);
+  }
+  n.append(fragment);
+ }
+ addPage();
+});
+for(const b of $('parts').querySelectorAll('.part')){
+ b.classList.toggle('selected',b.dataset.part===s.selected);
+}
 render('offers',s.offers,n=>s.offers.forEach(o=>{const c=document.createElement('div');c.className='offer';c.append(widget({text:o.name+' '+o.caption}));o.controls.forEach(d=>c.append(widget(d)));n.append(c)}));dialog(s.dialog);
 if(listView)render('installedParts',[s.installedParts,s.focused],n=>{
  if(!s.installedParts.length)n.append(widget({text:'尚未安装配件。'}));
@@ -75,7 +111,7 @@ $('start').onclick=async()=>{
   const args=['--main-pack','game.pck'];
   if(listView)args.push('--headless');
   const engine=new Engine({executable:'engine',canvas:$('canvas'),canvasResizePolicy:0,locale:'zh_CN',focusCanvas:false,persistentPaths:['/userfs'],args});
-  await Promise.all([engine.init('engine'),engine.preloadFile('game.pck?v=2','game.pck')]);
+  await Promise.all([engine.init('engine'),engine.preloadFile('game.pck?v=3','game.pck')]);
   await engine.start();
  }catch(error){
   console.error(error);

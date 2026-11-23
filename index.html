@@ -2,14 +2,14 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#171a1d"><meta name="description" content="机核工坊 0.11 中文 3D 装机模拟器。挑选硬件、组装主机、诊断故障，支持手机触控。">
+<meta name="theme-color" content="#171a1d"><meta name="description" content="机核工坊网页版中文 3D 装机模拟器。挑选硬件、组装主机、诊断故障，支持手机触控。">
 <title>机核工坊 · PC FORGE</title>
 <link rel="icon" href="assets/mark.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header class="mast">
  <a class="brand" href="#menu" id="home"><img src="assets/mark.svg" alt=""><b>PC<span>FORGE</span></b></a>
- <div class="edition"><span class="online"></span><span>WEB EDITION</span><b>v0.11</b></div>
+ <div class="edition"><span class="online"></span><span>WEB EDITION</span><b>v0.12</b></div>
 </header>
 <main id="menu" class="menu">
  <section class="intro">
@@ -31,7 +31,7 @@
   <div class="displayGrid"><div class="orbit-ring"></div><img class="rig" src="assets/vision.webp" alt="由游戏内模型渲染的白色联力 O11 Vision Compact 主机，侧面敞开，可见水冷和显卡。"><i class="cross tl"></i><i class="cross tr"></i><i class="cross bl"></i><i class="cross br"></i></div>
   <figcaption><div><small>LIAN LI / 联力</small><h2>O11 VISION <em>COMPACT</em></h2></div><span class="swatch" aria-label="白色机箱"></span></figcaption>
  </figure>
- <section class="stats" aria-label="游戏内容"><div><strong>543</strong><span>硬件条目</span></div><div><strong>12</strong><span>预设配置</span></div><div><strong>60</strong><span>维修案例</span></div></section>
+ <section class="stats" aria-label="游戏内容"><div><strong id="catalogCount">812</strong><span>硬件条目</span></div><div><strong>12</strong><span>预设配置</span></div><div><strong>60</strong><span>维修案例</span></div></section>
 </main>
 <main id="workshop" hidden>
  <div class="workTop"><div class="workTitle"><span class="eyebrow"><i></i> WORKBENCH</span><h1 id="modeName">自由装机</h1></div><div class="topActions"><div class="wallet"><small>工坊币</small><b id="balance">—</b></div><div id="fileTools" class="row"></div><button id="backMenu" class="flat" title="工作模式">模式</button></div></div>
@@ -45,5 +45,5 @@
 </main>
 <footer id="menuFooter"><span>PC FORGE <i>/</i> 机核工坊</span><button id="help"><span data-icon="help"></span> 操作指南</button></footer>
 <dialog id="modal"><div class="dialogHead"><h2 id="dialogTitle"></h2><button id="closeDialog" aria-label="关闭">×</button></div><div id="dialogBody"></div><div id="dialogFoot" class="row"></div></dialog>
-<script src="app.js?v=2" defer></script>
+<script src="app.js?v=3" defer></script>
 </body></html>
